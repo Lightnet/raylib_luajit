@@ -42,14 +42,13 @@ int main(int argc, char *argv[]) {
     // Open standard Lua libraries
     luaL_openlibs(L);
 
-    // Register raylib module in package.preload
-    lua_getglobal(L, "package");
-    lua_getfield(L, -1, "preload");
-    lua_pushcfunction(L, luaopen_raylib);
-    lua_setfield(L, -2, "rl");
-    lua_pushcfunction(L, luaopen_enet);
-    lua_setfield(L, -2, "enet");
-    lua_pop(L, 2);  // Remove package and preload from stack
+    // Register raylib functions
+    luaopen_raylib(L);
+    lua_setglobal(L, "rl");
+
+    // Register enet functions
+    luaopen_enet(L);
+    lua_setglobal(L, "enet");
 
     // Load and execute the Lua script
     if (luaL_loadfile(L, script_path) || lua_pcall(L, 0, 0, 0)) {

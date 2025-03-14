@@ -10,7 +10,7 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/cmake/CPM.cmake")
 endif()
 include(${CMAKE_BINARY_DIR}/cmake/CPM.cmake)
 
-# Add raylib 5.5 as a shared library
+# Add raylib 5.5 (shared for FFI)
 CPMAddPackage(
     NAME raylib
     GITHUB_REPOSITORY raysan5/raylib
@@ -19,6 +19,22 @@ CPMAddPackage(
         "BUILD_EXAMPLES OFF"
         "BUILD_GAMES OFF"
         "BUILD_SHARED_LIBS ON"
+)
+
+# Add raygui 4.0 (header-only)
+CPMAddPackage(
+    NAME raygui
+    GITHUB_REPOSITORY raysan5/raygui
+    GIT_TAG 4.0
+    DOWNLOAD_ONLY YES
+)
+
+# Add enet 2.6.2 (header-only, static linking)
+CPMAddPackage(
+    NAME enet
+    GITHUB_REPOSITORY zpl-c/enet
+    GIT_TAG v2.6.2
+    DOWNLOAD_ONLY YES
 )
 
 # Add LuaJIT
@@ -45,8 +61,6 @@ if(luajit_ADDED)
             COMMENT "Building LuaJIT static library with MSVC"
         )
         add_custom_target(luajit_build DEPENDS ${LUAJIT_LIB} ${LUAJIT_LUA51_LIB})
-    else()
-        message(STATUS "Using existing LuaJIT libraries: ${LUAJIT_LIB} and ${LUAJIT_LUA51_LIB}")
     endif()
 
     add_library(luajit STATIC IMPORTED)
@@ -59,24 +73,31 @@ if(luajit_ADDED)
     endif()
 endif()
 
-message(status "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
+# Project executable with enet statically linked
+add_executable(${PROJECT_NAME} 
+  src/main.c 
+  src/enet-luajit.c 
+  src/raylib-luajit.c
+)
 
-# Project executable
-add_executable(${PROJECT_NAME} src/main.c)
-
-# Link raylib and LuaJIT
+# Link raylib, LuaJIT, and include raygui and enet
 target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
     ${raylib_SOURCE_DIR}/src
     ${luajit_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${raygui_SOURCE_DIR}/src
+    ${enet_SOURCE_DIR}/include
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE
     raylib
     "${LUAJIT_SRC_DIR}/src/luajit.lib"
     "${LUAJIT_SRC_DIR}/src/lua51.lib"
 )
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32 winmm)
+endif()
 
-# Copy raylib DLL to output directory
+# Copy raylib.dll to output directory
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "$<TARGET_FILE:raylib>"

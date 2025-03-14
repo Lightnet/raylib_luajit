@@ -1,3 +1,5 @@
+-- TEST BUILD OUTDATE BUT REFS
+
 local bit = require("bit")
 
 rl.InitWindow(800, 450, "raylib [core] demo - LuaJIT")

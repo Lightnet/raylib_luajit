@@ -6,6 +6,13 @@
  * VS2022 (Makefile build for LuaJIT)
  * CMake
 
+# Libs:
+ * raylib 5.5
+ * raygui 4.0
+ * zpl-c/enet 2.6.2 (dll not working correctly)
+ * luajit 2.1.0 beta3
+
+
 # Information:
 
   Work in progress. This is just a test build.
@@ -15,6 +22,8 @@
   Using the CMake to build all binary application.
 
   There are two way to run lua script for raylib. One using the wrapper which required some setup and other is c library loader from script which raylib need to be added to the main.c to access but required setup functions and vars.
+
+  For FFI to work need dll library. As it need the name to load and use the api calls.
 
 # Design:
   Run lua script entry point instead of compile to binary application every time. Reduce. But depend on the code build.
@@ -29,6 +38,27 @@ demo.lua
 
 # Lua Script Notes:
   Create a api lua to define api as rl = raylib for easy access. It can be found in raylib-luajit.h which required register functions and vars. To run lua script easy.
+
+  We be using required package for standard. Not using global. Reason chance it get overrided.
+
+```c
+// Register raylib module in package.preload
+lua_getglobal(L, "package");
+lua_getfield(L, -1, "preload");
+lua_pushcfunction(L, luaopen_raylib);
+lua_setfield(L, -2, "rl");
+lua_pushcfunction(L, luaopen_enet);
+lua_setfield(L, -2, "enet");
+lua_pop(L, 2);  // Remove package and preload from stack
+```
+
+```lua
+local rl = require("rl")
+local enet = require("enet")
+```
+
+## Not correct setup.
+  Just the testing builds.
 ```c
 //main.c
 // Register raylib functions with Lua
@@ -49,7 +79,7 @@ rl.CloseWindow()
 ```
 
 ## FFI Library:
-  Another way is access c library using FFI for raylib and other libs.
+  Another way is access c library using FFI for raylib and other libs. Example filename.dll
 
 ```lua
 local ffi = require("ffi")

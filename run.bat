@@ -13,7 +13,7 @@ echo Running raylib_luajit...
 
 cd build\Debug\
 
-%EXECUTABLE%
+%EXECUTABLE% demo.lua
 
 if %ERRORLEVEL% NEQ 0 (
     echo Program exited with error code %ERRORLEVEL%
