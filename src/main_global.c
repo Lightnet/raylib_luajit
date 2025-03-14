@@ -1,3 +1,4 @@
+// test for global var for raylib and others.
 #define WIN32_LEAN_AND_MEAN 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define NOGDI             // All GDI defines and routines
