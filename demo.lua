@@ -1,5 +1,7 @@
 local rl = require("rl")
 local enet = require("enet")
+local rm = require("rm")
+local rg = require("rg")
 
 local colors = {
     RAYWHITE = {245, 245, 245, 255},
@@ -29,10 +31,11 @@ if not peer then
     return
 end
 
-rl.InitWindow(800, 450, "raylib + ENet Wrapper Test")
-local rect_x = 0
+rl.InitWindow(800, 450, "raylib + ENet + Raymath + Raygui Test")
+local pos = {0, 200, 0}  -- Vector3 as table {x, y, z}
 local speed = 100
 local connected = false
+local show_gui = false
 
 while not rl.WindowShouldClose() do
     local dt = rl.GetFrameTime()
@@ -41,12 +44,14 @@ while not rl.WindowShouldClose() do
     if rl.IsKeyPressed(264) then speed = speed - 50 end  -- KEY_DOWN
     speed = math.max(10, speed)
 
-    rect_x = rect_x + speed * dt
-    if rect_x > 800 then rect_x = 0 end
+    -- Move using Vector3Add
+    local velocity = {speed * dt, 0, 0}
+    pos = rm.Vector3Add(pos, velocity)
+    if pos[1] > 800 then pos[1] = 0 end
 
     if connected then
-        local data = tostring(rect_x)
-        local packet = enet.packet_create(data, 1)  -- Reliable
+        local data = tostring(pos[1])
+        local packet = enet.packet_create(data, 1)
         local result = enet.peer_send(peer, 0, packet)
         if result ~= 0 then
             print("Failed to send packet: " .. result)
@@ -60,8 +65,8 @@ while not rl.WindowShouldClose() do
             connected = true
         elseif event.type == enet.EVENT_TYPE_RECEIVE then
             local data = enet.packet_data(event.packet)
-            rect_x = tonumber(data) or rect_x
-            enet.packet_destroy(event.packet)  -- Explicitly destroy received packet
+            pos[1] = tonumber(data) or pos[1]
+            enet.packet_destroy(event.packet)
         elseif event.type == enet.EVENT_TYPE_DISCONNECT then
             print("Disconnected from server")
             connected = false
@@ -70,10 +75,22 @@ while not rl.WindowShouldClose() do
 
     rl.BeginDrawing()
     rl.ClearBackground(colors.RAYWHITE)
-    rl.DrawRectangle(rect_x, 200, 100, 50, connected and colors.GREEN or colors.RED)
-    rl.DrawText("rect_x: " .. math.floor(rect_x), 10, 10, 20, colors.BLACK)
+    rl.DrawRectangle(pos[1], pos[2], 100, 50, connected and colors.GREEN or colors.RED)
+    rl.DrawText("pos.x: " .. math.floor(pos[1]), 10, 10, 20, colors.BLACK)
     rl.DrawText("Speed: " .. speed .. " (Up/Down to adjust)", 10, 30, 20, colors.BLACK)
     rl.DrawText("Status: " .. (connected and "Connected" or "Disconnected"), 10, 50, 20, colors.BLACK)
+
+    -- Raygui test
+    if rg.GuiButton({700, 10, 80, 30}, "Toggle GUI") then
+        show_gui = not show_gui
+    end
+    if show_gui then
+        rg.GuiLabel({10, 80, 100, 20}, "Test Label")
+        if rg.GuiCheckBox({10, 110, 20, 20}, "Connected?", connected) then
+            connected = not connected  -- Toggle for demo
+        end
+    end
+
     rl.EndDrawing()
 end
 

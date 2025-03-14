@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(raylib_luajit LANGUAGES C CXX)
 
-# Add CPM.cmake
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/cmake/CPM.cmake")
     file(DOWNLOAD
         "https://github.com/cpm-cmake/CPM.cmake/releases/latest/download/CPM.cmake"
@@ -10,7 +9,6 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/cmake/CPM.cmake")
 endif()
 include(${CMAKE_BINARY_DIR}/cmake/CPM.cmake)
 
-# Add raylib 5.5 (shared for FFI)
 CPMAddPackage(
     NAME raylib
     GITHUB_REPOSITORY raysan5/raylib
@@ -21,7 +19,6 @@ CPMAddPackage(
         "BUILD_SHARED_LIBS ON"
 )
 
-# Add raygui 4.0 (header-only)
 CPMAddPackage(
     NAME raygui
     GITHUB_REPOSITORY raysan5/raygui
@@ -29,7 +26,6 @@ CPMAddPackage(
     DOWNLOAD_ONLY YES
 )
 
-# Add enet 2.6.2 (header-only, static linking)
 CPMAddPackage(
     NAME enet
     GITHUB_REPOSITORY zpl-c/enet
@@ -37,7 +33,6 @@ CPMAddPackage(
     DOWNLOAD_ONLY YES
 )
 
-# Add LuaJIT
 CPMAddPackage(
     NAME luajit
     GITHUB_REPOSITORY LuaJIT/LuaJIT
@@ -45,7 +40,6 @@ CPMAddPackage(
     DOWNLOAD_ONLY YES
 )
 
-# Build LuaJIT for Windows with MSVC
 if(luajit_ADDED)
     set(LUAJIT_SRC_DIR ${luajit_SOURCE_DIR})
     set(LUAJIT_LIB "${LUAJIT_SRC_DIR}/src/luajit.lib")
@@ -73,21 +67,22 @@ if(luajit_ADDED)
     endif()
 endif()
 
-# Project executable with enet statically linked
 add_executable(${PROJECT_NAME} 
-  src/main.c 
-  src/enet-luajit.c 
-  src/raylib-luajit.c
+    src/main.c 
+    src/enet-luajit.c 
+    src/raylib-luajit.c 
+    src/raymath-luajit.c 
+    src/raygui-luajit.c
 )
 
-# Link raylib, LuaJIT, and include raygui and enet
 target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-    ${raylib_SOURCE_DIR}/src
-    ${luajit_SOURCE_DIR}/src
-    ${raygui_SOURCE_DIR}/src
-    ${enet_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/include  # Headers: raylib-luajit.h, enet-luajit.h, etc.
+    ${raylib_SOURCE_DIR}/src    # raylib.h, raymath.h
+    ${luajit_SOURCE_DIR}/src    # lua.h, lauxlib.h, etc.
+    ${raygui_SOURCE_DIR}/src    # raygui.h
+    ${enet_SOURCE_DIR}/include  # enet.h
 )
+
 target_link_libraries(${PROJECT_NAME} PRIVATE
     raylib
     "${LUAJIT_SRC_DIR}/src/luajit.lib"
@@ -97,7 +92,6 @@ if(WIN32)
     target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32 winmm)
 endif()
 
-# Copy raylib.dll to output directory
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "$<TARGET_FILE:raylib>"
@@ -105,7 +99,6 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMENT "Copying raylib DLL to output directory"
 )
 
-# Copy demo.lua to output directory
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_SOURCE_DIR}/demo.lua"
