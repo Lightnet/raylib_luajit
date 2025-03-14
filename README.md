@@ -7,23 +7,21 @@
  * CMake
 
 # Libs:
- * raylib 5.5
- * raygui 4.0
+ * raylib 5.5 and raymath (wip wrapper api)
+ * raygui 4.0 (wip wrapper api)
  * zpl-c/enet 2.6.2 (dll not working correctly)
  * luajit 2.1.0 beta3
 
 
 # Information:
 
-  Work in progress. This is just a test build.
+  Work in progress. This is just a test build. It took some time to debug and keep it simple.
 
-  It took some time to debug and keep it simple.
-
-  Using the CMake to build all binary application.
+  Using the CMake to build all in one binary application to run off lua script.
 
   There are two way to run lua script for raylib. One using the wrapper which required some setup and other is c library loader from script which raylib need to be added to the main.c to access but required setup functions and vars.
 
-  For FFI to work need dll library. As it need the name to load and use the api calls.
+  For FFI to work need c dll library. As it need the name to load and use the api calls.
 
 # Design:
   Run lua script entry point instead of compile to binary application every time. Reduce. But depend on the code build.
@@ -39,7 +37,7 @@ demo.lua
 # Lua Script Notes:
   Create a api lua to define api as rl = raylib for easy access. It can be found in raylib-luajit.h which required register functions and vars. To run lua script easy.
 
-  We be using required package for standard. Not using global. Reason chance it get overrided.
+  Using required package for standard. Not using global. Reason chance it get overrided.
 
 ```c
 // Register raylib module in package.preload
