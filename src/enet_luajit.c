@@ -1,4 +1,4 @@
-#include "enet-luajit.h"
+#include "enet_luajit.h"
 #include <lauxlib.h>
 #include <string.h>
 
