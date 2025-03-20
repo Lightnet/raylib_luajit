@@ -1,4 +1,4 @@
-#include "raymath_luajit.h"
+#include "raymath_lua.h"
 #include <raymath.h>
 #include <lauxlib.h>
 

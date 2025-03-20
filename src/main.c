@@ -14,11 +14,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "raylib_luajit.h"
-#include "enet_luajit.h"
-#include "raymath_luajit.h"
-#include "raygui_luajit.h"
-#include "flecs_luajit.h"
+#include "raylib_lua.h"
+#include "enet_lua.h"
+#include "raymath_lua.h"
+#include "raygui_lua.h"
+#include "flecs_lua.h"
 
 // Custom error handler
 static int lua_error_handler(lua_State *L) {
@@ -71,16 +71,16 @@ static int lua_error_handler(lua_State *L) {
 }
 
 int main(int argc, char *argv[]) {
-    printf("LUA_TNONE %d\n", LUA_TNONE);
-    printf("LUA_TNIL %d\n", LUA_TNIL);
-    printf("LUA_TBOOLEAN %d\n", LUA_TBOOLEAN);
-    printf("LUA_TNUMBER %d\n", LUA_TNUMBER);
-    printf("LUA_TSTRING %d\n", LUA_TSTRING);
-    printf("LUA_TTABLE %d\n", LUA_TTABLE);
-    printf("LUA_TFUNCTION %d\n", LUA_TFUNCTION);
-    printf("LUA_TUSERDATA %d\n", LUA_TUSERDATA);
-    printf("LUA_TTHREAD %d\n", LUA_TTHREAD);
-    printf("LUA_TTABLE %d\n", LUA_TTABLE);
+    // printf("LUA_TNONE %d\n", LUA_TNONE);
+    // printf("LUA_TNIL %d\n", LUA_TNIL);
+    // printf("LUA_TBOOLEAN %d\n", LUA_TBOOLEAN);
+    // printf("LUA_TNUMBER %d\n", LUA_TNUMBER);
+    // printf("LUA_TSTRING %d\n", LUA_TSTRING);
+    // printf("LUA_TTABLE %d\n", LUA_TTABLE);
+    // printf("LUA_TFUNCTION %d\n", LUA_TFUNCTION);
+    // printf("LUA_TUSERDATA %d\n", LUA_TUSERDATA);
+    // printf("LUA_TTHREAD %d\n", LUA_TTHREAD);
+    // printf("LUA_TTABLE %d\n", LUA_TTABLE);
 
     const char *script_path = "demo.lua";
 
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
     lua_pushcfunction(L, luaopen_raygui);
     lua_setfield(L, -2, "rg");
     lua_pushcfunction(L, luaopen_flecs);
-    lua_setfield(L, -2, "flecs");
+    lua_setfield(L, -2, "flecs_lua");
     lua_pop(L, 2);
 
     //printf("Stack before pcall: top=%d\n", lua_gettop(L));

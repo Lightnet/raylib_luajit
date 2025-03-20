@@ -94,11 +94,11 @@ endif()
 
 add_executable(${PROJECT_NAME} 
     src/main.c 
-    src/enet_luajit.c 
-    src/raylib_luajit.c 
-    src/raymath_luajit.c 
-    src/raygui_luajit.c
-    src/flecs_luajit.c
+    src/enet_lua.c 
+    src/raylib_lua.c 
+    src/raymath_lua.c 
+    src/raygui_lua.c
+    src/flecs_lua.c
 )
 
 if(TARGET luajit_build)

@@ -2,7 +2,7 @@
 #define RAYGUI_IMPLEMENTATION
 #include <raylib.h>
 #include "raygui.h"
-#include "luajit_utils.h"
+#include "lua_utils.h"
 
 #define MAX_TEXT_LENGTH 256
 

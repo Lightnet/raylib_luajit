@@ -1,5 +1,5 @@
-#include "raylib_luajit.h"
-#include "luajit_utils.h"
+#include "raylib_lua.h"
+#include "lua_utils.h"
 #include <raylib.h>
 
 // Core
@@ -174,12 +174,6 @@ static int l_SetMouseCursor(lua_State *L) {
   SetMouseCursor(cursor);
   return 0;
 }
-
-
-
-
-
-
 
 
 
@@ -456,14 +450,33 @@ int luaopen_raylib(lua_State *L) {
     lua_newtable(L);
     luaL_setfuncs(L, raylib_funcs, 0);
 
-    push_color(L, RAYWHITE); lua_setfield(L, -2, "RAYWHITE");
-    push_color(L, BLACK);    lua_setfield(L, -2, "BLACK");
-    push_color(L, RED);      lua_setfield(L, -2, "RED");
-    push_color(L, GREEN);    lua_setfield(L, -2, "GREEN");
-    push_color(L, BLUE);     lua_setfield(L, -2, "BLUE");
-    push_color(L, YELLOW);   lua_setfield(L, -2, "YELLOW");
-    push_color(L, PURPLE);   lua_setfield(L, -2, "PURPLE");
+    push_color(L, LIGHTGRAY); lua_setfield(L, -2, "LIGHTGRAY");
     push_color(L, GRAY);     lua_setfield(L, -2, "GRAY");
+    push_color(L, DARKGRAY);     lua_setfield(L, -2, "DARKGRAY");
+    push_color(L, YELLOW);   lua_setfield(L, -2, "YELLOW");
+    push_color(L, GOLD);   lua_setfield(L, -2, "GOLD");
+    push_color(L, ORANGE);   lua_setfield(L, -2, "ORANGE");
+    push_color(L, PINK);   lua_setfield(L, -2, "PINK");
+    push_color(L, RED);      lua_setfield(L, -2, "RED");
+    push_color(L, MAROON);      lua_setfield(L, -2, "MAROON");
+    push_color(L, GREEN);      lua_setfield(L, -2, "GREEN");
+    push_color(L, LIME);      lua_setfield(L, -2, "LIME");
+    push_color(L, DARKGREEN);      lua_setfield(L, -2, "DARKGREEN");
+    push_color(L, SKYBLUE);      lua_setfield(L, -2, "SKYBLUE");
+    push_color(L, BLUE);      lua_setfield(L, -2, "BLUE");
+    push_color(L, DARKBLUE);      lua_setfield(L, -2, "DARKBLUE");
+    push_color(L, PURPLE);   lua_setfield(L, -2, "PURPLE");
+    push_color(L, VIOLET);   lua_setfield(L, -2, "VIOLET");
+    push_color(L, DARKPURPLE);   lua_setfield(L, -2, "DARKPURPLE");
+    push_color(L, BEIGE);   lua_setfield(L, -2, "BEIGE");
+    push_color(L, BROWN);   lua_setfield(L, -2, "BROWN");
+    push_color(L, DARKBROWN);   lua_setfield(L, -2, "DARKBROWN");
+
+    push_color(L, WHITE); lua_setfield(L, -2, "WHITE");
+    push_color(L, BLACK);    lua_setfield(L, -2, "BLACK");
+    push_color(L, BLANK);    lua_setfield(L, -2, "BLANK");
+    push_color(L, MAGENTA); lua_setfield(L, -2, "MAGENTA");
+    push_color(L, RAYWHITE); lua_setfield(L, -2, "RAYWHITE");
 
     lua_pushinteger(L, KEY_NULL); lua_setfield(L, -2, "KEY_NULL");
     lua_pushinteger(L, KEY_APOSTROPHE); lua_setfield(L, -2, "KEY_APOSTROPHE");
