@@ -13,6 +13,7 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/cmake/CPM.cmake")
 endif()
 include(${CMAKE_BINARY_DIR}/cmake/CPM.cmake)
 
+# raylib
 CPMAddPackage(
     NAME raylib
     GITHUB_REPOSITORY raysan5/raylib
@@ -23,6 +24,7 @@ CPMAddPackage(
         "BUILD_SHARED_LIBS ON"
 )
 
+# raygui
 CPMAddPackage(
     NAME raygui
     GITHUB_REPOSITORY raysan5/raygui
@@ -30,6 +32,7 @@ CPMAddPackage(
     DOWNLOAD_ONLY YES
 )
 
+# enet
 CPMAddPackage(
     NAME enet
     GITHUB_REPOSITORY zpl-c/enet
@@ -37,6 +40,7 @@ CPMAddPackage(
     DOWNLOAD_ONLY YES
 )
 
+# luajit
 CPMAddPackage(
     NAME luajit
     GITHUB_REPOSITORY openresty/luajit2
@@ -44,6 +48,7 @@ CPMAddPackage(
     DOWNLOAD_ONLY YES
 )
 
+# flecs
 CPMAddPackage(
     NAME flecs
     GITHUB_REPOSITORY SanderMertens/flecs
@@ -60,7 +65,6 @@ if(luajit_ADDED)
     set(LUAJIT_DLL "${CACHE_DIR}/lua51.dll")
     set(LUAJIT_LIB "${CACHE_DIR}/lua51.lib")
 
-    # Only rebuild LuaJIT if cached files are missing or source changed
     if(NOT EXISTS ${LUAJIT_DLL} OR NOT EXISTS ${LUAJIT_LIB} OR "${LUAJIT_SRC_DIR}/src/luajit.c" IS_NEWER_THAN ${LUAJIT_DLL})
         set(VS_VCVARSALL "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Auxiliary/Build/vcvarsall.bat")
         add_custom_command(
@@ -70,7 +74,6 @@ if(luajit_ADDED)
             WORKING_DIRECTORY ${LUAJIT_SRC_DIR}/src
             COMMENT "Building LuaJIT shared library with MSVC"
         )
-        # Copy to cache after building
         add_custom_command(
             OUTPUT ${LUAJIT_DLL} ${LUAJIT_LIB}
             COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LUAJIT_DLL_SRC} ${LUAJIT_DLL}
@@ -92,6 +95,59 @@ if(luajit_ADDED)
     endif()
 endif()
 
+# mimalloc (Configured as DLL)
+CPMAddPackage(
+    NAME mimalloc
+    GITHUB_REPOSITORY microsoft/mimalloc
+    GIT_TAG v2.2.2
+    OPTIONS
+        "MI_BUILD_TESTS OFF"
+        "MI_BUILD_EXAMPLES OFF"
+        "MI_BUILD_SHARED ON"
+)
+
+# Check and configure raylib.dll
+set(RAYLIB_DLL_SRC "${raylib_BINARY_DIR}/raylib/Debug/raylib.dll")
+set(RAYLIB_DLL "${CACHE_DIR}/raylib.dll")
+if(NOT EXISTS ${RAYLIB_DLL} OR "${raylib_SOURCE_DIR}/src/raylib.h" IS_NEWER_THAN ${RAYLIB_DLL})
+    add_custom_command(
+        OUTPUT ${RAYLIB_DLL}
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying raylib.dll from ${RAYLIB_DLL_SRC} to ${RAYLIB_DLL}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${RAYLIB_DLL_SRC} ${RAYLIB_DLL}
+        DEPENDS raylib
+        COMMENT "Caching raylib.dll from ${RAYLIB_DLL_SRC}"
+    )
+    add_custom_target(raylib_cache DEPENDS ${RAYLIB_DLL})
+endif()
+
+# Check and configure flecs.dll
+set(FLECS_DLL_SRC "${flecs_BINARY_DIR}/Debug/flecs.dll")
+set(FLECS_DLL "${CACHE_DIR}/flecs.dll")
+if(NOT EXISTS ${FLECS_DLL} OR "${flecs_SOURCE_DIR}/flecs.c" IS_NEWER_THAN ${FLECS_DLL})
+    add_custom_command(
+        OUTPUT ${FLECS_DLL}
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying flecs.dll from ${FLECS_DLL_SRC} to ${FLECS_DLL}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${FLECS_DLL_SRC} ${FLECS_DLL}
+        DEPENDS flecs
+        COMMENT "Caching flecs.dll from ${FLECS_DLL_SRC}"
+    )
+    add_custom_target(flecs_cache DEPENDS ${FLECS_DLL})
+endif()
+
+# Check and configure mimalloc.dll (Updated to mimalloc-debug.dll)
+set(MIMALLOC_DLL_SRC "${mimalloc_BINARY_DIR}/Debug/mimalloc-debug.dll")  # Updated to match actual output
+set(MIMALLOC_DLL "${CACHE_DIR}/mimalloc-debug.dll")  # Keep the debug suffix for consistency
+if(NOT EXISTS ${MIMALLOC_DLL} OR "${mimalloc_SOURCE_DIR}/src/alloc.c" IS_NEWER_THAN ${MIMALLOC_DLL})
+    add_custom_command(
+        OUTPUT ${MIMALLOC_DLL}
+        COMMAND ${CMAKE_COMMAND} -E echo "Copying mimalloc-debug.dll from ${MIMALLOC_DLL_SRC} to ${MIMALLOC_DLL}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${MIMALLOC_DLL_SRC} ${MIMALLOC_DLL}
+        DEPENDS mimalloc
+        COMMENT "Caching mimalloc-debug.dll from ${MIMALLOC_DLL_SRC}"
+    )
+    add_custom_target(mimalloc_cache DEPENDS ${MIMALLOC_DLL})
+endif()
+
 add_executable(${PROJECT_NAME} 
     src/main.c 
     src/enet_lua.c 
@@ -104,6 +160,15 @@ add_executable(${PROJECT_NAME}
 if(TARGET luajit_build)
     add_dependencies(${PROJECT_NAME} luajit_build)
 endif()
+if(TARGET raylib_cache)
+    add_dependencies(${PROJECT_NAME} raylib_cache)
+endif()
+if(TARGET flecs_cache)
+    add_dependencies(${PROJECT_NAME} flecs_cache)
+endif()
+if(TARGET mimalloc_cache)
+    add_dependencies(${PROJECT_NAME} mimalloc_cache)
+endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/include
@@ -112,13 +177,16 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${raygui_SOURCE_DIR}/src
     ${enet_SOURCE_DIR}/include
     ${flecs_SOURCE_DIR}/include
+    ${mimalloc_SOURCE_DIR}/include
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     raylib
     flecs
     luajit
+    mimalloc
 )
+
 if(WIN32)
     target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32 winmm)
 endif()
@@ -126,7 +194,7 @@ endif()
 # Copy DLLs to output directory
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "$<TARGET_FILE:raylib>"
+        "${RAYLIB_DLL}"
         "$<TARGET_FILE_DIR:${PROJECT_NAME}>/raylib.dll"
     COMMENT "Copying raylib.dll to output directory"
 )
@@ -140,9 +208,16 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${flecs_BINARY_DIR}/Debug/flecs.dll"
+        "${FLECS_DLL}"
         "$<TARGET_FILE_DIR:${PROJECT_NAME}>/flecs.dll"
     COMMENT "Copying flecs.dll to output directory"
+)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${MIMALLOC_DLL}"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/mimalloc-debug.dll"  # Updated to match cached name
+    COMMENT "Copying mimalloc-debug.dll to output directory"
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
