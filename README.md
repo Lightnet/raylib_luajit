@@ -6,8 +6,11 @@ A simple project to run raylib, raygui, enet, and raymath from Lua scripts using
 - MIT License - Free to use, modify, and share!
 
 # Table of Contents  
- * [What You Need](#What You Need)
- * [Raylib CheatSheet](#Raylib CheatSheet)
+ * [What You Need](#What-You-Need)
+ * [Credits](#Credits)
+ * [Raylib CheatSheet](#Raylib-CheatSheet)
+ * [RayMath CheatSheet](#RayMath-CheatSheet)
+ * [RayGui CheatSheet](#RayGui-CheatSheet)
 
 ---
 
